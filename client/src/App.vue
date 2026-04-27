@@ -32,6 +32,10 @@
             {{ t('nav.backlog') }}
           </router-link>
         </nav>
+        <button class="theme-toggle" @click="toggleTheme" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
+          <span v-if="isDark">☀️</span>
+          <span v-else>🌙</span>
+        </button>
         <LanguageSwitcher />
         <ProfileMenu
           @show-profile-details="showProfileDetails = true"
@@ -61,7 +65,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { api } from './api'
 import { useAuth } from './composables/useAuth'
 import { useI18n } from './composables/useI18n'
@@ -85,6 +89,19 @@ export default {
     const { t } = useI18n()
     const showProfileDetails = ref(false)
     const showTasks = ref(false)
+
+    const isDark = ref(localStorage.getItem('theme') === 'dark')
+
+    const applyTheme = (dark) => {
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+      localStorage.setItem('theme', dark ? 'dark' : 'light')
+    }
+
+    const toggleTheme = () => {
+      isDark.value = !isDark.value
+    }
+
+    watch(isDark, applyTheme, { immediate: true })
     const apiTasks = ref([])
 
     // Merge mock tasks from currentUser with API tasks
@@ -161,7 +178,9 @@ export default {
       tasks,
       addTask,
       deleteTask,
-      toggleTask
+      toggleTask,
+      isDark,
+      toggleTheme
     }
   }
 }
@@ -212,6 +231,46 @@ export default {
   --radius-md: 10px;
   --radius-lg: 12px;
   --radius-pill: 999px;
+}
+
+[data-theme="dark"] {
+  /* Brand */
+  --color-brand: #3b82f6;
+  --color-brand-light: #1e3a5f;
+  --color-brand-muted: #1e3a5f;
+
+  /* Semantic */
+  --color-danger: #f87171;
+  --color-danger-light: #2d1515;
+  --color-danger-border: #7f1d1d;
+  --color-warning: #fb923c;
+  --color-warning-light: #2d1a0a;
+  --color-success: #34d399;
+  --color-success-light: #052e16;
+  --color-info: #60a5fa;
+  --color-info-light: #1e3a5f;
+
+  /* Neutrals */
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #e2e8f0;
+  --color-text-muted: #94a3b8;
+  --color-text-subtle: #64748b;
+  --color-text-body: #cbd5e1;
+
+  /* Surfaces */
+  --color-surface: #1e2330;
+  --color-surface-raised: #252b3b;
+  --color-bg: linear-gradient(135deg, #0f1117 0%, #141824 50%, #0f1a17 100%);
+
+  /* Borders */
+  --color-border: rgba(55, 65, 81, 0.8);
+  --color-border-solid: #374151;
+  --color-border-light: #1f2937;
+
+  /* Shadows */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-nav: 0 1px 3px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(59, 130, 246, 0.15);
 }
 
 * {
@@ -549,5 +608,26 @@ tbody tr:hover {
   border-radius: var(--radius-md);
   margin: 1rem 0;
   font-size: 0.938rem;
+}
+
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--color-border-solid);
+  border-radius: var(--radius-pill);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  background: var(--color-brand-light);
+  border-color: var(--color-brand);
 }
 </style>
